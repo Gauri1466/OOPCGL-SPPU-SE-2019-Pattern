@@ -1,0 +1,50 @@
+Write a C++ program that creates an output file, writes information to it, closes the file, open 
+it again as an input file and read the information from the file. 
+#include<iostream>
+#include<string>
+#include<fstream>
+using namespace std;
+class student{
+    string name;
+    int rollno;
+    float cgpa;
+    public:
+    void store(){
+        cout<<"Enter the Name :";
+        cin.ignore();
+        getline(cin,name);
+        cout<<"Enter rollno :";
+        cin>>rollno;
+        cout<<"Enter CGPA obtained";
+        cin>>cgpa;
+    }
+    void print(){
+        cout<<"Name :"<<name<<endl;
+        cout<<"Roll no :"<<rollno<<endl;
+        cout<<"CGPA :"<<cgpa<<endl;
+    }
+};
+int main(){
+    student s[5];
+    fstream f;
+    int n;
+    f.open("oop.txt",ios::out);
+    cout<<"\n Enter the no of students you want to store :"<<endl;
+    cin>>n;
+    for(int i=0;i<n;i++)
+    {
+        cout<<"\nInformation of"<<i+1<<"students "<<endl;
+        s[i].store();
+        f.write((char*)&s[i],sizeof s[i]);
+    }
+    f.close();
+    f.open("oop.txt",ios::in);
+    for(int i=0;i<n;i++){
+    cout<<"Student"<<i+1<<endl;
+    f.read((char*)&s[i],sizeof s[i]);
+    s[i].print();
+    }
+    f.close();
+    return 0;
+
+}
