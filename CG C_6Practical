@@ -1,0 +1,93 @@
+c) Write OpenGL program to draw Sun Rise and Sunset.
+#include <GL/glut.h>
+#include <cmath>
+
+float sunY = -0.8f; // Initial position of the sun
+float sunDirection = 1.0f; // Direction of sun movement: 1 for rising, -1 for setting
+
+// Function to draw a circle for the sun
+void drawCircle(float x, float y, float radius) {
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex2f(x, y);
+    for (int i = 0; i <= 100; ++i) {
+        float angle = 2.0f * M_PI * i / 100;
+        float dx = radius * cos(angle);
+        float dy = radius * sin(angle);
+        glVertex2f(x + dx, y + dy);
+    }
+    glEnd();
+}
+
+// Function to draw the ground
+void drawGround() {
+    glColor3f(0.0f, 0.5f, 0.0f); // Green color for ground
+    glBegin(GL_QUADS);
+    glVertex2f(-1.0f, -0.8f);
+    glVertex2f(1.0f, -0.8f);
+    glVertex2f(1.0f, -1.0f);
+    glVertex2f(-1.0f, -1.0f);
+    glEnd();
+}
+
+// Function to display the scene
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Draw the sky (gradient effect for day and night)
+    if (sunY > -0.2f) {
+        glColor3f(0.4f, 0.7f, 1.0f); // Day sky (light blue)
+    } else {
+        glColor3f(0.0f, 0.0f, 0.2f); // Night sky (dark blue)
+    }
+    glBegin(GL_QUADS);
+    glVertex2f(-1.0f, 1.0f);
+    glVertex2f(1.0f, 1.0f);
+    glVertex2f(1.0f, -0.8f);
+    glVertex2f(-1.0f, -0.8f);
+    glEnd();
+
+    // Draw the ground
+    drawGround();
+
+    // Draw the sun
+    glColor3f(1.0f, 1.0f, 0.0f); // Yellow color for sun
+    drawCircle(0.0f, sunY, 0.1f);
+
+    glutSwapBuffers();
+}
+
+// Timer function for animation
+void timer(int value) {
+    sunY += 0.01f * sunDirection; // Update sun position
+
+    // Reverse direction at limits (simulate rising and setting)
+    if (sunY > 0.8f || sunY < -0.8f) {
+        sunDirection *= -1.0f;
+    }
+
+    glutPostRedisplay();
+    glutTimerFunc(30, timer, 0);
+}
+
+// OpenGL initialization
+void init() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black background
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-1.0, 1.0, -1.0, 1.0); // Orthographic projection
+}
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    glutInitWindowSize(800, 600);
+    glutCreateWindow("Sunrise and Sunset");
+
+    init();
+
+    glutDisplayFunc(display);
+    glutTimerFunc(0, timer, 0);
+
+    glutMainLoop();
+    return 0;
+}
