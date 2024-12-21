@@ -1,0 +1,93 @@
+a) Write C++ program to draw 2-D object and perform following basic transformations, Scaling 
+b) Translation c) Rotation. Apply the concept of operator overloading. 
+
+#include <graphics.h>
+#include <cmath>
+#include <iostream>
+#include <vector>
+
+class Transform2D {
+private:
+    std::vector<std::pair<int, int>> points; // List of vertices of the object
+
+public:
+    // Constructor to initialize the object
+    Transform2D(const std::vector<std::pair<int, int>>& vertices) : points(vertices) {}
+
+    // Overload the * operator for scaling
+    Transform2D operator*(float scale) {
+        std::vector<std::pair<int, int>> scaledPoints;
+        for (const auto& point : points) {
+            scaledPoints.emplace_back(point.first * scale, point.second * scale);
+        }
+        return Transform2D(scaledPoints);
+    }
+
+    // Overload the + operator for translation
+    Transform2D operator+(const std::pair<int, int>& translation) {
+        std::vector<std::pair<int, int>> translatedPoints;
+        for (const auto& point : points) {
+            translatedPoints.emplace_back(point.first + translation.first, point.second + translation.second);
+        }
+        return Transform2D(translatedPoints);
+    }
+
+    // Overload the ^ operator for rotation
+    Transform2D operator^(float angle) {
+        std::vector<std::pair<int, int>> rotatedPoints;
+        float radian = angle * M_PI / 180.0;
+        for (const auto& point : points) {
+            int x = round(point.first * cos(radian) - point.second * sin(radian));
+            int y = round(point.first * sin(radian) + point.second * cos(radian));
+            rotatedPoints.emplace_back(x, y);
+        }
+        return Transform2D(rotatedPoints);
+    }
+
+    // Function to draw the object
+    void draw() const {
+        for (size_t i = 0; i < points.size(); ++i) {
+            int x1 = points[i].first;
+            int y1 = points[i].second;
+            int x2 = points[(i + 1) % points.size()].first;
+            int y2 = points[(i + 1) % points.size()].second;
+            line(x1, y1, x2, y2);
+        }
+    }
+};
+
+int main() {
+    // Initialize graphics mode
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "");
+
+    // Define a 2D object (triangle in this example)
+    std::vector<std::pair<int, int>> vertices = {{100, 100}, {200, 100}, {150, 200}};
+    Transform2D object(vertices);
+
+    // Draw the original object
+    setcolor(WHITE);
+    object.draw();
+
+    // Perform scaling
+    Transform2D scaledObject = object * 1.5;
+    setcolor(RED);
+    scaledObject.draw();
+
+    // Perform translation
+    Transform2D translatedObject = object + std::make_pair(100, 50);
+    setcolor(GREEN);
+    translatedObject.draw();
+
+    // Perform rotation
+    Transform2D rotatedObject = object ^ 45;
+    setcolor(BLUE);
+    rotatedObject.draw();
+
+    // Hold the screen
+    getch();
+
+    // Close graphics mode
+    closegraph();
+    return 0;
+}
