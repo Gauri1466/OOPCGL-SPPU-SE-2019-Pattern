@@ -1,0 +1,97 @@
+a) Write C++ program to draw the following pattern. Use DDA line and Bresenham‘s circle 
+drawing algorithm. Apply the concept of encapsulation. 
+ #include <graphics.h>
+#include <cmath>
+#include <iostream>
+
+// Encapsulating the drawing logic in a class
+class PatternDrawer {
+private:
+    // Function to draw a line using DDA algorithm
+    void drawLineDDA(int x1, int y1, int x2, int y2) {
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        int steps = std::max(abs(dx), abs(dy));
+
+        float xIncrement = dx / steps;
+        float yIncrement = dy / steps;
+
+        float x = x1;
+        float y = y1;
+        for (int i = 0; i <= steps; ++i) {
+            putpixel(round(x), round(y), WHITE);
+            x += xIncrement;
+            y += yIncrement;
+        }
+    }
+
+    // Function to draw a circle using Bresenham's algorithm
+    void drawCircleBresenham(int xc, int yc, int r) {
+        int x = 0, y = r;
+        int d = 3 - 2 * r;
+        drawCirclePoints(xc, yc, x, y);
+
+        while (y >= x) {
+            ++x;
+
+            if (d > 0) {
+                --y;
+                d = d + 4 * (x - y) + 10;
+            } else {
+                d = d + 4 * x + 6;
+            }
+
+            drawCirclePoints(xc, yc, x, y);
+        }
+    }
+
+    // Helper function to draw all eight octants of the circle
+    void drawCirclePoints(int xc, int yc, int x, int y) {
+        putpixel(xc + x, yc + y, WHITE);
+        putpixel(xc - x, yc + y, WHITE);
+        putpixel(xc + x, yc - y, WHITE);
+        putpixel(xc - x, yc - y, WHITE);
+        putpixel(xc + y, yc + x, WHITE);
+        putpixel(xc - y, yc + x, WHITE);
+        putpixel(xc + y, yc - x, WHITE);
+        putpixel(xc - y, yc - x, WHITE);
+    }
+
+public:
+    // Function to draw the desired pattern
+    void drawPattern() {
+        int xc = 300, yc = 300; // Center of the pattern
+        int radius = 100;       // Radius of the circle
+
+        // Draw the outer circle
+        drawCircleBresenham(xc, yc, radius);
+
+        // Draw lines radiating from the center
+        for (int angle = 0; angle < 360; angle += 45) {
+            int x2 = xc + radius * cos(angle * M_PI / 180.0);
+            int y2 = yc + radius * sin(angle * M_PI / 180.0);
+            drawLineDDA(xc, yc, x2, y2);
+        }
+
+        // Draw inner concentric circles
+        drawCircleBresenham(xc, yc, radius / 2);
+        drawCircleBresenham(xc, yc, radius / 4);
+    }
+};
+
+int main() {
+    // Initialize graphics mode
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "");
+
+    // Create an instance of PatternDrawer and draw the pattern
+    PatternDrawer drawer;
+    drawer.drawPattern();
+
+    // Hold the screen
+    getch();
+
+    // Close graphics mode
+    closegraph();
+    return 0;
+}
