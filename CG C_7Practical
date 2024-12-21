@@ -1,0 +1,96 @@
+ a) Write a C++ program to control a ball using arrow keys. Apply the concept of 
+polymorphism.
+#include <GL/glut.h>
+#include <iostream>
+
+// Abstract base class for object behavior
+class Drawable {
+public:
+    virtual void draw() = 0;               // Pure virtual function for drawing
+    virtual void move(int key) = 0;        // Pure virtual function for movement
+    virtual ~Drawable() {}
+};
+
+// Derived class for Ball
+class Ball : public Drawable {
+private:
+    float x, y;    // Position of the ball
+    float radius;  // Radius of the ball
+
+public:
+    Ball(float startX, float startY, float r) : x(startX), y(startY), radius(r) {}
+
+    void draw() override {
+        glColor3f(1.0f, 0.0f, 0.0f); // Red color for the ball
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(x, y);
+        for (int i = 0; i <= 100; ++i) {
+            float angle = 2.0f * M_PI * i / 100;
+            float dx = radius * cos(angle);
+            float dy = radius * sin(angle);
+            glVertex2f(x + dx, y + dy);
+        }
+        glEnd();
+    }
+
+    void move(int key) override {
+        switch (key) {
+        case GLUT_KEY_UP:
+            y += 0.05f;
+            break;
+        case GLUT_KEY_DOWN:
+            y -= 0.05f;
+            break;
+        case GLUT_KEY_LEFT:
+            x -= 0.05f;
+            break;
+        case GLUT_KEY_RIGHT:
+            x += 0.05f;
+            break;
+        }
+
+        // Keep the ball within boundaries
+        if (x - radius < -1.0f) x = -1.0f + radius;
+        if (x + radius > 1.0f) x = 1.0f - radius;
+        if (y - radius < -1.0f) y = -1.0f + radius;
+        if (y + radius > 1.0f) y = 1.0f - radius;
+    }
+};
+
+Ball ball(0.0f, 0.0f, 0.1f); // Create a ball object
+
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Draw the ball
+    ball.draw();
+
+    glutSwapBuffers();
+}
+
+void specialKeys(int key, int x, int y) {
+    ball.move(key); // Move the ball based on key input
+    glutPostRedisplay();
+}
+
+void init() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black background
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-1.0, 1.0, -1.0, 1.0); // Set up orthographic projection
+}
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    glutInitWindowSize(800, 800);
+    glutCreateWindow("Ball Control with Arrow Keys");
+
+    init();
+
+    glutDisplayFunc(display);
+    glutSpecialFunc(specialKeys); // Handle special keys (arrow keys)
+
+    glutMainLoop();
+    return 0;
+}
