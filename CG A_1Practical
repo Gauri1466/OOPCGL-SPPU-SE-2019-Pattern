@@ -1,0 +1,102 @@
+  Write C++ program to draw a concave polygon and fill it with desired color using scan fill 
+algorithm. Apply the concept of inheritance. 
+#include <graphics.h>
+#include <vector>
+#include <algorithm>
+
+// Base class for shapes
+class Shape {
+public:
+    virtual void draw() = 0;
+    virtual void fill(int color) = 0;
+};
+
+// Derived class for Polygon
+class Polygon : public Shape {
+private:
+    std::vector<std::pair<int, int>> vertices; // Vector of vertices
+
+public:
+    // Constructor to initialize vertices
+    Polygon(const std::vector<std::pair<int, int>>& points) {
+        vertices = points;
+    }
+
+    // Draw the outline of the polygon
+    void draw() override {
+        for (size_t i = 0; i < vertices.size(); ++i) {
+            int x1 = vertices[i].first;
+            int y1 = vertices[i].second;
+            int x2 = vertices[(i + 1) % vertices.size()].first;
+            int y2 = vertices[(i + 1) % vertices.size()].second;
+            line(x1, y1, x2, y2);
+        }
+    }
+
+    // Fill the polygon using the scan-line fill algorithm
+    void fill(int color) override {
+        int ymin = INT_MAX, ymax = INT_MIN;
+
+        // Find the min and max y-coordinates
+        for (const auto& vertex : vertices) {
+            ymin = std::min(ymin, vertex.second);
+            ymax = std::max(ymax, vertex.second);
+        }
+
+        // Process each scan line
+        for (int y = ymin; y <= ymax; ++y) {
+            std::vector<int> intersections;
+
+            // Find intersections with each edge
+            for (size_t i = 0; i < vertices.size(); ++i) {
+                int x1 = vertices[i].first;
+                int y1 = vertices[i].second;
+                int x2 = vertices[(i + 1) % vertices.size()].first;
+                int y2 = vertices[(i + 1) % vertices.size()].second;
+
+                if (y1 == y2) continue; // Ignore horizontal edges
+
+                if (y >= std::min(y1, y2) && y <= std::max(y1, y2)) {
+                    int x = x1 + (y - y1) * (x2 - x1) / (y2 - y1);
+                    intersections.push_back(x);
+                }
+            }
+
+            // Sort intersections
+            std::sort(intersections.begin(), intersections.end());
+
+            // Fill pixels between pairs of intersections
+            for (size_t i = 0; i < intersections.size(); i += 2) {
+                if (i + 1 < intersections.size()) {
+                    line(intersections[i], y, intersections[i + 1], y);
+                }
+            }
+        }
+
+        // Set the fill color
+        setcolor(color);
+    }
+};
+
+int main() {
+    // Initialize graphics mode
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "");
+
+    // Define vertices of a concave polygon
+    std::vector<std::pair<int, int>> points = {{100, 150}, {200, 50}, {300, 150}, {250, 250}, {150, 250}};
+
+    // Create a Polygon object
+    Polygon polygon(points);
+
+    // Draw and fill the polygon
+    polygon.draw();
+    polygon.fill(YELLOW);
+
+    // Hold the screen
+    getch();
+
+    // Close graphics mode
+    closegraph();
+    return 0;
+}
