@@ -1,0 +1,67 @@
+ a)  Write C++ program to generate snowflake using concept of fractals. 
+#include <graphics.h>
+#include <cmath>
+#include <iostream>
+
+// Function to draw a line segment for the fractal
+void drawLineSegment(int x1, int y1, int x2, int y2, int level) {
+    if (level == 0) {
+        // Base case: draw a simple line
+        line(x1, y1, x2, y2);
+    } else {
+        // Calculate the points for the Koch curve
+        int x3 = x1 + (x2 - x1) / 3;
+        int y3 = y1 + (y2 - y1) / 3;
+
+        int x4 = x1 + 2 * (x2 - x1) / 3;
+        int y4 = y1 + 2 * (y2 - y1) / 3;
+
+        double angle = M_PI / 3; // 60 degrees in radians
+        int x5 = (int)(x3 + (x4 - x3) * cos(angle) - (y4 - y3) * sin(angle));
+        int y5 = (int)(y3 + (x4 - x3) * sin(angle) + (y4 - y3) * cos(angle));
+
+        // Recursive calls for each segment
+        drawLineSegment(x1, y1, x3, y3, level - 1);
+        drawLineSegment(x3, y3, x5, y5, level - 1);
+        drawLineSegment(x5, y5, x4, y4, level - 1);
+        drawLineSegment(x4, y4, x2, y2, level - 1);
+    }
+}
+
+// Function to draw a snowflake fractal
+void drawSnowflake(int x, int y, int size, int level) {
+    int x1 = x;
+    int y1 = y;
+
+    int x2 = x + size;
+    int y2 = y;
+
+    int x3 = x + size / 2;
+    int y3 = y - (int)(size * sqrt(3) / 2);
+
+    // Draw the three sides of the snowflake
+    drawLineSegment(x1, y1, x2, y2, level);
+    drawLineSegment(x2, y2, x3, y3, level);
+    drawLineSegment(x3, y3, x1, y1, level);
+}
+
+int main() {
+    // Initialize graphics mode
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "");
+
+    // Draw a snowflake at the center of the screen
+    int x = 200;         // X-coordinate of the snowflake
+    int y = 300;         // Y-coordinate of the snowflake
+    int size = 200;      // Size of the snowflake
+    int level = 4;       // Fractal depth
+
+    drawSnowflake(x, y, size, level);
+
+    // Hold the screen
+    getch();
+
+    // Close graphics mode
+    closegraph();
+    return 0;
+}
